@@ -179,7 +179,7 @@ function configure_tempest
             image_uuid_alt="$IMAGE_UUID"
         fi
         images+=($IMAGE_UUID)
-    done < <($OPENSTACK_CMD image list --property status=active | awk -F'|' '!/^(+--)|ID|aki|ari/ { print $3,$2 }')
+    done < <($OPENSTACK_CMD image list --property status=active -f value | awk ' { print $2,$1 }')
 
     case "${#images[*]}" in
         0)
@@ -381,7 +381,7 @@ function configure_tempest
             network_id_alt="$NETWORK_UUID"
         fi
         networks+=($NETWORK_UUID)
-    done < <($OPENSTACK_CMD network list --long -c ID -c "Router Type" --project $test_project_id | awk -F'|' '!/^(+--)|ID|aki|ari/ { print $3,$2 }')
+    done < <($OPENSTACK_CMD network list --long -c ID -c "Router Type" --project $test_project_id -f value | awk '{ print $2,$1 }')
 
     case "${#networks[*]}" in
         0)
@@ -406,7 +406,7 @@ function configure_tempest
     esac
 
     # router
-    ext_network_id=`($OPENSTACK_CMD network list --external --long -c ID -c "Router Type" | awk -F'|' '!/^(+--)|ID|aki|ari/ { print $3,$2 }' | head -1)`
+    ext_network_id=`($OPENSTACK_CMD network list --external --long -c ID -c "Router Type" -f value | awk '{ print $2,$1 }' | head -1)`
     if [ -z "$ext_network_id" ]; then
         echo "External network not available"
     fi
@@ -414,7 +414,7 @@ function configure_tempest
     while read -r ROUTER_UUID; do
             router_id="$ROUTER_UUID"
         routers+=($ROUTER_UUID)
-    done < <($OPENSTACK_CMD router list --long -c ID --project $test_project_id | awk -F'|' '!/^(+--)|ID|aki|ari/ { print $2 }')
+    done < <($OPENSTACK_CMD router list --long -c ID --project $test_project_id -f value )
  
     case "${#routers[*]}" in
         0)
@@ -445,7 +445,7 @@ function configure_tempest
     $OPENSTACK_CMD floating ip list    
 
     #Update default security group rules
-    def_secgrp_id=`($OPENSTACK_CMD security group list --project $TEST_PROJECT_NAME | grep default | awk -F'|' '!/^(+--)|ID|aki|ari/ { print $2 }')`
+    def_secgrp_id=`($OPENSTACK_CMD security group list --project $TEST_PROJECT_NAME -f value | grep default | awk '{ print $1 }')`
     echo $def_secgrp_id
     $OPENSTACK_CMD security group show $def_secgrp_id
     $OPENSTACK_CMD security group show $def_secgrp_id
